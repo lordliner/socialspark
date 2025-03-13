@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - SocialSpark</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -296,7 +297,9 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle">🌙</button>
+    <div class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
     
     <header>
         <a href="index.html" class="logo">SocialSpark</a>
@@ -352,6 +355,13 @@
                     </div>
                 </div>
                 
+                <div class="terms">
+                    <label>
+                        <input type="checkbox" id="terms" required>
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+                
                 <button type="submit" class="btn">Create Account</button>
                 
                 <div class="login-link">
@@ -361,10 +371,15 @@
                 <div class="social-signup">
                     <p>Or sign up with</p>
                     <div class="social-buttons">
-                        <div class="social-btn" title="Sign up with Google">G</div>
-                        <div class="social-btn" title="Sign up with Facebook">f</div>
-                        <div class="social-btn" title="Sign up with Twitter">t</div>
-                        <div class="social-btn" title="Sign up with LinkedIn">in</div>
+                        <button class="social-btn google" onclick="signupWithGoogle()">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn facebook" onclick="signupWithFacebook()">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="social-btn twitter" onclick="signupWithTwitter()">
+                            <i class="fab fa-twitter"></i>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -375,80 +390,109 @@
         <p>&copy; 2025 SocialSpark. All rights reserved.</p>
     </footer>
 
-    <script>
+    <script type="module">
+        import { 
+            auth, 
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            googleProvider,
+            facebookProvider,
+            twitterProvider
+        } from './firebase-config.js';
+
         // Theme toggle functionality
-        const themeToggle = document.getElementById('themeToggle');
+        const themeToggle = document.querySelector('.theme-toggle');
         const body = document.body;
-        
-        // Check if user has a theme preference stored
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            body.classList.add('dark-mode');
-            themeToggle.textContent = '☀️';
-        }
-        
+        const theme = localStorage.getItem('theme') || 'light';
+        body.classList.toggle('dark-theme', theme === 'dark');
+
         themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDark = body.classList.contains('dark-mode');
-            themeToggle.textContent = isDark ? '☀️' : '🌙';
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
         });
-        
+
         // Password visibility toggle
-        const togglePassword = document.getElementById('togglePassword');
-        const password = document.getElementById('password');
+        const passwordToggles = document.querySelectorAll('.toggle-password, .toggle-password-confirm');
         
-        togglePassword.addEventListener('click', function() {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🔒';
-        });
-        
-        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        
-        toggleConfirmPassword.addEventListener('click', function() {
-            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPassword.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️' : '🔒';
-        });
-        
-        // Form validation
-        const signupForm = document.getElementById('signupForm');
-        
-        signupForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const passwordValue = password.value;
-            const confirmPasswordValue = confirmPassword.value;
-            
-            if (passwordValue !== confirmPasswordValue) {
-                alert('Passwords do not match!');
-                return;
-            }
-            
-            if (passwordValue.length < 8) {
-                alert('Password must be at least 8 characters long!');
-                return;
-            }
-            
-            // If validation passes, show success message
-            alert(`Thank you for signing up, ${fullName}! We've sent a confirmation email to ${email}.`);
-            
-            // Redirect to index page after successful signup
-            window.location.href = 'index.html';
-        });
-        
-        // Social signup buttons
-        const socialButtons = document.querySelectorAll('.social-btn');
-        
-        socialButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                alert('Social sign-up integration coming soon!');
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const input = toggle.parentElement.querySelector('input');
+                const type = input.type === 'password' ? 'text' : 'password';
+                input.type = type;
+                toggle.classList.toggle('fa-eye');
+                toggle.classList.toggle('fa-eye-slash');
             });
         });
+
+        // Signup form submission
+        const signupForm = document.getElementById('signupForm');
+        const errorMessage = document.getElementById('error-message');
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+
+            if (!terms) {
+                showError('Please accept the Terms of Service and Privacy Policy');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // Update user profile with full name
+                await userCredential.user.updateProfile({
+                    displayName: fullName
+                });
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        // Social media signup functions
+        window.signupWithGoogle = async () => {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        window.signupWithFacebook = async () => {
+            try {
+                await signInWithPopup(auth, facebookProvider);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        window.signupWithTwitter = async () => {
+            try {
+                await signInWithPopup(auth, twitterProvider);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </body>
 </html> 

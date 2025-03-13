@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SocialSpark</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #2c3e50;
+            --background-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e1e1e1;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+        }
+
+        .dark-theme {
+            --background-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --secondary-color: #34495e;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--secondary-color);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .profile-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--secondary-color);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .social-links {
+            margin-top: 30px;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            transform: translateX(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .social-link.connected {
+            border-color: var(--success-color);
+        }
+
+        .social-link i {
+            font-size: 24px;
+            width: 30px;
+        }
+
+        .social-link .status {
+            margin-left: auto;
+            color: var(--success-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            .user-profile {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-info {
+                text-align: center;
+            }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sidebar {
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu a.active {
+            background: var(--primary-color);
+        }
+
+        .main-content {
+            padding: 20px;
+            background: var(--background-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .post-form {
+            margin-bottom: 30px;
+        }
+
+        .post-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .platform-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .platform-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .platform-option:hover {
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        .post-scheduling {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .schedule-details, .recurring-details {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .recurring-options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .post-preview {
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .preview-tabs {
+            display: flex;
+            overflow-x: auto;
+            background: var(--secondary-color);
+        }
+
+        .preview-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .preview-tab.active {
+            background: var(--primary-color);
+        }
+
+        .preview-content {
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .notification-center {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .notifications-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.unread {
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        .notification-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-time {
+            font-size: 0.8em;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="header">
+            <h1>Dashboard</h1>
+            <div class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#" onclick="showScheduler()"><i class="fas fa-calendar"></i> Schedule</a></li>
+                    <li><a href="#" onclick="showAnalytics()"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                    <li><a href="#" onclick="showSettings()"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-content">
+                <div class="user-profile">
+                    <label class="profile-upload">
+                        <input type="file" accept="image/*" onchange="updateProfileImage(event)">
+                        <div class="profile-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </label>
+                    <div class="profile-info">
+                        <h2 id="userName">Loading...</h2>
+                        <p id="userEmail">Loading...</p>
+                        <button class="btn logout-btn" onclick="logout()">Log Out</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalPosts">0</h3>
+                        <p>Total Posts</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalEngagement">0</h3>
+                        <p>Total Engagement</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="scheduledPosts">0</h3>
+                        <p>Scheduled Posts</p>
+                    </div>
+                </div>
+
+                <div class="post-form">
+                    <textarea placeholder="What's on your mind?" rows="4"></textarea>
+                    <div class="post-actions">
+                        <div class="platform-select">
+                            <div class="platform-option">
+                                <input type="checkbox" id="facebook" name="platform" value="facebook">
+                                <label for="facebook"><i class="fab fa-facebook"></i> Facebook</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="twitter" name="platform" value="twitter">
+                                <label for="twitter"><i class="fab fa-twitter"></i> Twitter</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="instagram" name="platform" value="instagram">
+                                <label for="instagram"><i class="fab fa-instagram"></i> Instagram</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="linkedin" name="platform" value="linkedin">
+                                <label for="linkedin"><i class="fab fa-linkedin"></i> LinkedIn</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="tiktok" name="platform" value="tiktok">
+                                <label for="tiktok"><i class="fab fa-tiktok"></i> TikTok</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="pinterest" name="platform" value="pinterest">
+                                <label for="pinterest"><i class="fab fa-pinterest"></i> Pinterest</label>
+                            </div>
+                            <div class="platform-option">
+                                <input type="checkbox" id="youtube" name="platform" value="youtube">
+                                <label for="youtube"><i class="fab fa-youtube"></i> YouTube</label>
+                            </div>
+                        </div>
+                        <div class="post-scheduling">
+                            <div class="schedule-option">
+                                <input type="radio" id="postNow" name="scheduleType" value="now" checked>
+                                <label for="postNow">Post Now</label>
+                            </div>
+                            <div class="schedule-option">
+                                <input type="radio" id="schedulePost" name="scheduleType" value="schedule">
+                                <label for="schedulePost">Schedule Post</label>
+                            </div>
+                            <div class="schedule-option">
+                                <input type="radio" id="recurringPost" name="scheduleType" value="recurring">
+                                <label for="recurringPost">Recurring Post</label>
+                            </div>
+                        </div>
+                        <div id="scheduleDetails" class="schedule-details" style="display: none;">
+                            <div class="datetime-picker">
+                                <input type="datetime-local" id="scheduleTime">
+                            </div>
+                        </div>
+                        <div id="recurringDetails" class="recurring-details" style="display: none;">
+                            <div class="recurring-options">
+                                <select id="recurringFrequency">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                                <div id="weeklyOptions" style="display: none;">
+                                    <div class="day-selector">
+                                        <input type="checkbox" id="mon" name="day" value="1">
+                                        <label for="mon">Mon</label>
+                                        <input type="checkbox" id="tue" name="day" value="2">
+                                        <label for="tue">Tue</label>
+                                        <input type="checkbox" id="wed" name="day" value="3">
+                                        <label for="wed">Wed</label>
+                                        <input type="checkbox" id="thu" name="day" value="4">
+                                        <label for="thu">Thu</label>
+                                        <input type="checkbox" id="fri" name="day" value="5">
+                                        <label for="fri">Fri</label>
+                                        <input type="checkbox" id="sat" name="day" value="6">
+                                        <label for="sat">Sat</label>
+                                        <input type="checkbox" id="sun" name="day" value="0">
+                                        <label for="sun">Sun</label>
+                                    </div>
+                                </div>
+                                <input type="time" id="recurringTime">
+                                <input type="date" id="endDate" placeholder="End Date">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="createPost()">Post</button>
+                    </div>
+                </div>
+
+                <div class="post-preview">
+                    <h3>Post Preview</h3>
+                    <div class="preview-container">
+                        <div class="preview-tabs">
+                            <button class="preview-tab active" data-platform="facebook">Facebook</button>
+                            <button class="preview-tab" data-platform="twitter">Twitter</button>
+                            <button class="preview-tab" data-platform="instagram">Instagram</button>
+                            <button class="preview-tab" data-platform="linkedin">LinkedIn</button>
+                            <button class="preview-tab" data-platform="tiktok">TikTok</button>
+                            <button class="preview-tab" data-platform="pinterest">Pinterest</button>
+                            <button class="preview-tab" data-platform="youtube">YouTube</button>
+                        </div>
+                        <div class="preview-content">
+                            <!-- Preview content will be dynamically updated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notificationCenter" class="notification-center">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                        <button class="clear-all">Clear All</button>
+                    </div>
+                    <div class="notifications-list">
+                        <!-- Notifications will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="posts-list" id="postsList">
+                    <!-- Posts will be dynamically added here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('settingsModal')">&times;</span>
+            <h2>Settings</h2>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="settingsName">
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea id="settingsBio"></textarea>
+            </div>
+            <button class="btn" onclick="saveSettings()">Save Changes</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { 
+            auth,
+            db,
+            storage,
+            signOut,
+            signInWithPopup,
+            googleProvider,
+            facebookProvider,
+            twitterProvider,
+            githubProvider,
+            updateUserProfile,
+            getUserProfile,
+            createPost,
+            uploadProfileImage,
+            onSnapshot,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            serverTimestamp,
+            collection,
+            query,
+            where,
+            orderBy,
+            limit,
+            getDocs
+        } from './firebase-config.js';
+
+        // Theme toggle functionality
+        const themeToggle = document.querySelector('.theme-toggle');
+        const body = document.body;
+        const theme = localStorage.getItem('theme') || 'light';
+        body.classList.toggle('dark-theme', theme === 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        // Check authentication and load user data
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                document.getElementById('userName').textContent = user.displayName || 'User';
+                document.getElementById('userEmail').textContent = user.email;
+                
+                // Load user profile
+                const profile = await getUserProfile(user.uid);
+                if (profile) {
+                    if (profile.photoURL) {
+                        document.querySelector('.profile-image').innerHTML = `
+                            <img src="${profile.photoURL}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        `;
+                    }
+                    // Update other profile information
+                }
+                
+                // Check linked providers
+                const providers = user.providerData.map(provider => provider.providerId);
+                updateProviderStatus(providers);
+                
+                // Load posts
+                loadPosts(user.uid);
+                
+                // Load statistics
+                loadStatistics(user.uid);
+
+                // Initialize real-time notifications
+                initializeNotifications();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Social media linking functions
+        window.linkGoogle = async () => {
+            try {
+                await signInWithPopup(auth, googleProvider);
+                location.reload();
+            } catch (error) {
+                console.error('Error linking Google account:', error);
+            }
+        };
+
+        window.linkFacebook = async () => {
+            try {
+                await signInWithPopup(auth, facebookProvider);
+                location.reload();
+            } catch (error) {
+                console.error('Error linking Facebook account:', error);
+            }
+        };
+
+        window.linkTwitter = async () => {
+            try {
+                await signInWithPopup(auth, twitterProvider);
+                location.reload();
+            } catch (error) {
+                console.error('Error linking Twitter account:', error);
+            }
+        };
+
+        // Profile image upload
+        window.updateProfileImage = async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const user = auth.currentUser;
+                const imageUrl = await uploadProfileImage(user.uid, file);
+                if (imageUrl) {
+                    document.querySelector('.profile-image').innerHTML = `
+                        <img src="${imageUrl}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    `;
+                }
+            }
+        };
+
+        // Post creation
+        window.createPost = async () => {
+            const content = document.querySelector('.post-form textarea').value;
+            const platforms = Array.from(document.querySelectorAll('input[name="platform"]:checked'))
+                .map(input => input.value);
+            const scheduleType = document.querySelector('input[name="scheduleType"]:checked').value;
+            
+            if (!content || platforms.length === 0) return;
+
+            const user = auth.currentUser;
+            const postData = {
+                content,
+                platforms,
+                userId: user.uid,
+                timestamp: serverTimestamp(),
+                status: 'draft'
+            };
+
+            if (scheduleType === 'schedule') {
+                postData.scheduleTime = new Date(document.getElementById('scheduleTime').value).toISOString();
+                postData.status = 'scheduled';
+            } else if (scheduleType === 'recurring') {
+                postData.recurring = {
+                    frequency: document.getElementById('recurringFrequency').value,
+                    time: document.getElementById('recurringTime').value,
+                    endDate: document.getElementById('endDate').value,
+                    days: Array.from(document.querySelectorAll('input[name="day"]:checked'))
+                        .map(input => parseInt(input.value))
+                };
+                postData.status = 'recurring';
+            }
+
+            try {
+                const docRef = await addDoc(collection(db, 'posts'), postData);
+                document.querySelector('.post-form textarea').value = '';
+                
+                // Add success notification
+                await addDoc(collection(db, 'notifications'), {
+                    userId: user.uid,
+                    type: 'success',
+                    message: 'Post created successfully!',
+                    timestamp: serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Error creating post:', error);
+                
+                // Add error notification
+                await addDoc(collection(db, 'notifications'), {
+                    userId: user.uid,
+                    type: 'error',
+                    message: 'Error creating post: ' + error.message,
+                    timestamp: serverTimestamp()
+                });
+            }
+        };
+
+        // Load posts
+        async function loadPosts(userId) {
+            // Implementation for loading posts
+        }
+
+        // Load statistics
+        async function loadStatistics(userId) {
+            // Implementation for loading statistics
+        }
+
+        // Settings modal
+        window.showSettings = () => {
+            document.getElementById('settingsModal').classList.add('active');
+        };
+
+        window.closeModal = (modalId) => {
+            document.getElementById(modalId).classList.remove('active');
+        };
+
+        window.saveSettings = async () => {
+            const user = auth.currentUser;
+            const name = document.getElementById('settingsName').value;
+            const bio = document.getElementById('settingsBio').value;
+
+            await updateUserProfile(user.uid, { displayName: name, bio });
+            closeModal('settingsModal');
+        };
+
+        // Logout function
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        };
+
+        // Initialize real-time notifications
+        function initializeNotifications() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const notificationsRef = collection(db, 'notifications');
+            const q = query(
+                notificationsRef,
+                where('userId', '==', user.uid),
+                orderBy('timestamp', 'desc'),
+                limit(20)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        addNotification(change.doc.data());
+                    }
+                });
+            });
+        }
+
+        function addNotification(notification) {
+            const notificationsList = document.querySelector('.notifications-list');
+            const notificationElement = document.createElement('div');
+            notificationElement.className = 'notification unread';
+            notificationElement.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas ${getNotificationIcon(notification.type)}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">${notification.message}</div>
+                    <div class="notification-time">${formatTimestamp(notification.timestamp)}</div>
+                </div>
+            `;
+            notificationsList.prepend(notificationElement);
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                success: 'fa-check',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            return icons[type] || 'fa-bell';
+        }
+
+        // Post preview functionality
+        function updatePostPreview() {
+            const content = document.querySelector('.post-form textarea').value;
+            const selectedPlatform = document.querySelector('.preview-tab.active').dataset.platform;
+            const previewContent = document.querySelector('.preview-content');
+            
+            // Customize preview based on platform
+            switch(selectedPlatform) {
+                case 'twitter':
+                    previewContent.innerHTML = `
+                        <div class="twitter-preview">
+                            <div class="tweet-header">
+                                <img src="${auth.currentUser.photoURL || 'default-avatar.png'}" alt="Profile">
+                                <span>${auth.currentUser.displayName}</span>
+                            </div>
+                            <div class="tweet-content">${content}</div>
+                        </div>
+                    `;
+                    break;
+                // Add other platform previews...
+            }
+        }
+
+        // Schedule handling
+        document.querySelectorAll('input[name="scheduleType"]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                document.getElementById('scheduleDetails').style.display = 
+                    e.target.value === 'schedule' ? 'block' : 'none';
+                document.getElementById('recurringDetails').style.display = 
+                    e.target.value === 'recurring' ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('recurringFrequency').addEventListener('change', (e) => {
+            document.getElementById('weeklyOptions').style.display = 
+                e.target.value === 'weekly' ? 'block' : 'none';
+        });
+
+        // Preview tab handling
+        document.querySelectorAll('.preview-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelector('.preview-tab.active').classList.remove('active');
+                tab.classList.add('active');
+                updatePostPreview();
+            });
+        });
+
+        // Update preview on content change
+        document.querySelector('.post-form textarea').addEventListener('input', updatePostPreview);
+
+        // Clear all notifications
+        document.querySelector('.clear-all').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const notificationsRef = collection(db, 'notifications');
+            const q = query(notificationsRef, where('userId', '==', user.uid));
+            const querySnapshot = await getDocs(q);
+            
+            querySnapshot.forEach(async (doc) => {
+                await deleteDoc(doc.ref);
+            });
+            
+            document.querySelector('.notifications-list').innerHTML = '';
+        });
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate();
+            return date.toLocaleString();
+        }
+    </script>
+</body>
+</html> 
