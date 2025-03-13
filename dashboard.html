@@ -379,6 +379,71 @@
             color: var(--text-color);
             opacity: 0.7;
         }
+
+        /* Add modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: var(--background-color);
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-form input {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .modal-form button {
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-form button:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -546,6 +611,61 @@
                 <div class="posts-list" id="postsList">
                     <!-- Posts will be dynamically added here -->
                 </div>
+
+                <div class="social-links">
+                    <h2>Social Media Accounts</h2>
+                    <div class="social-link" onclick="openLinkModal('facebook')">
+                        <i class="fab fa-facebook" style="color: #1877f2;"></i>
+                        <span>Facebook</span>
+                        <span class="status" id="facebook-status">Not Connected</span>
+                    </div>
+                    <div class="social-link" onclick="openLinkModal('twitter')">
+                        <i class="fab fa-twitter" style="color: #1da1f2;"></i>
+                        <span>Twitter</span>
+                        <span class="status" id="twitter-status">Not Connected</span>
+                    </div>
+                    <div class="social-link" onclick="openLinkModal('instagram')">
+                        <i class="fab fa-instagram" style="color: #e4405f;"></i>
+                        <span>Instagram</span>
+                        <span class="status" id="instagram-status">Not Connected</span>
+                    </div>
+                    <div class="social-link" onclick="openLinkModal('linkedin')">
+                        <i class="fab fa-linkedin" style="color: #0077b5;"></i>
+                        <span>LinkedIn</span>
+                        <span class="status" id="linkedin-status">Not Connected</span>
+                    </div>
+                    <div class="social-link" onclick="openLinkModal('tiktok')">
+                        <i class="fab fa-tiktok" style="color: #000000;"></i>
+                        <span>TikTok</span>
+                        <span class="status" id="tiktok-status">Not Connected</span>
+                    </div>
+                    <div class="social-link" onclick="openLinkModal('youtube')">
+                        <i class="fab fa-youtube" style="color: #ff0000;"></i>
+                        <span>YouTube</span>
+                        <span class="status" id="youtube-status">Not Connected</span>
+                    </div>
+                </div>
+
+                <!-- Social Media Link Modal -->
+                <div id="linkModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close-modal" onclick="closeLinkModal()">&times;</span>
+                        <div class="modal-header">
+                            <h2 id="modalTitle">Link Account</h2>
+                        </div>
+                        <form class="modal-form" id="linkForm" onsubmit="handleAccountLink(event)">
+                            <input type="hidden" id="platformInput" name="platform">
+                            <div>
+                                <label for="handleInput">Enter your handle/username:</label>
+                                <input type="text" id="handleInput" name="handle" required>
+                            </div>
+                            <div id="additionalFields">
+                                <!-- Dynamic fields will be added here based on platform -->
+                            </div>
+                            <button type="submit" class="btn">Link Account</button>
+                        </form>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -592,7 +712,10 @@
             where,
             orderBy,
             limit,
-            getDocs
+            getDocs,
+            doc,
+            getDoc,
+            updateDoc
         } from './firebase-config.js';
 
         // Theme toggle functionality
@@ -635,6 +758,9 @@
 
                 // Initialize real-time notifications
                 initializeNotifications();
+
+                // Load user's connected accounts on page load
+                loadConnectedAccounts();
             } else {
                 window.location.href = 'login.html';
             }
@@ -894,6 +1020,122 @@
             if (!timestamp) return '';
             const date = timestamp.toDate();
             return date.toLocaleString();
+        }
+
+        // Social Media Linking Functions
+        function openLinkModal(platform) {
+            const modal = document.getElementById('linkModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const platformInput = document.getElementById('platformInput');
+            const additionalFields = document.getElementById('additionalFields');
+            
+            modalTitle.textContent = `Link ${platform.charAt(0).toUpperCase() + platform.slice(1)} Account`;
+            platformInput.value = platform;
+            
+            // Clear previous additional fields
+            additionalFields.innerHTML = '';
+            
+            // Add platform-specific fields
+            switch(platform) {
+                case 'facebook':
+                    additionalFields.innerHTML = `
+                        <div>
+                            <label for="pageId">Facebook Page ID (optional):</label>
+                            <input type="text" id="pageId" name="pageId">
+                        </div>
+                    `;
+                    break;
+                case 'instagram':
+                    additionalFields.innerHTML = `
+                        <div>
+                            <label for="businessAccount">Business Account:</label>
+                            <input type="checkbox" id="businessAccount" name="businessAccount">
+                        </div>
+                    `;
+                    break;
+                // Add more platform-specific fields as needed
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeLinkModal() {
+            const modal = document.getElementById('linkModal');
+            modal.style.display = 'none';
+        }
+
+        async function handleAccountLink(event) {
+            event.preventDefault();
+            
+            const platform = document.getElementById('platformInput').value;
+            const handle = document.getElementById('handleInput').value;
+            
+            try {
+                // Get current user
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('User not authenticated');
+                }
+
+                // Update user's social media links in Firestore
+                const userDoc = doc(db, 'users', user.uid);
+                await updateDoc(userDoc, {
+                    [`socialMedia.${platform}`]: {
+                        handle: handle,
+                        connected: true,
+                        connectedAt: new Date().toISOString()
+                    }
+                });
+
+                // Update UI
+                const statusElement = document.getElementById(`${platform}-status`);
+                statusElement.textContent = 'Connected';
+                const socialLink = statusElement.closest('.social-link');
+                socialLink.classList.add('connected');
+
+                // Close modal
+                closeLinkModal();
+
+                // Show success notification
+                showNotification(`Successfully linked ${platform} account!`, 'success');
+            } catch (error) {
+                console.error('Error linking account:', error);
+                showNotification(`Error linking account: ${error.message}`, 'error');
+            }
+        }
+
+        // Load user's connected accounts on page load
+        async function loadConnectedAccounts() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userData = userDoc.data();
+
+                if (userData?.socialMedia) {
+                    Object.entries(userData.socialMedia).forEach(([platform, data]) => {
+                        if (data.connected) {
+                            const statusElement = document.getElementById(`${platform}-status`);
+                            if (statusElement) {
+                                statusElement.textContent = 'Connected';
+                                const socialLink = statusElement.closest('.social-link');
+                                socialLink.classList.add('connected');
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading connected accounts:', error);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('linkModal');
+            if (event.target === modal) {
+                closeLinkModal();
+            }
         }
     </script>
 </body>
